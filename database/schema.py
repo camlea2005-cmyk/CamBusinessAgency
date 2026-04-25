@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS sales (
     total_amount REAL NOT NULL DEFAULT 0,
     paid_amount REAL NOT NULL DEFAULT 0,
     debt_amount REAL NOT NULL DEFAULT 0,
+    payment_mode TEXT NOT NULL DEFAULT 'comptant',
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL

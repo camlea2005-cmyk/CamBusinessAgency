@@ -21,13 +21,11 @@ class Database:
             conn.executescript(SCHEMA_SQL)
             self._ensure_products_columns(conn)
             self._ensure_stock_movements_columns(conn)
+            self._ensure_sales_columns(conn)
             conn.commit()
 
     def _ensure_products_columns(self, conn: sqlite3.Connection) -> None:
-        existing = {
-            row["name"]
-            for row in conn.execute("PRAGMA table_info(products)").fetchall()
-        }
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
         required = {
             "code": "TEXT",
             "category": "TEXT",
@@ -39,9 +37,7 @@ class Database:
             if column not in existing:
                 conn.execute(f"ALTER TABLE products ADD COLUMN {column} {ddl}")
 
-        conn.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_code ON products(code)"
-        )
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_products_code ON products(code)")
 
         conn.execute(
             """
@@ -55,12 +51,14 @@ class Database:
         )
 
     def _ensure_stock_movements_columns(self, conn: sqlite3.Connection) -> None:
-        existing = {
-            row["name"]
-            for row in conn.execute("PRAGMA table_info(stock_movements)").fetchall()
-        }
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(stock_movements)").fetchall()}
         if "note" not in existing:
             conn.execute("ALTER TABLE stock_movements ADD COLUMN note TEXT")
+
+    def _ensure_sales_columns(self, conn: sqlite3.Connection) -> None:
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(sales)").fetchall()}
+        if "payment_mode" not in existing:
+            conn.execute("ALTER TABLE sales ADD COLUMN payment_mode TEXT NOT NULL DEFAULT 'comptant'")
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
